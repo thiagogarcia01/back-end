@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Rick and Morty API</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+    <h1>Personagens Rick and Morty</h1>
+
+    <!-- AREA DE CONTROLES -->
+    <div class="controles">
+
+        <input type="text" id="busca" placeholder="Buscar personagem...">
+
+        <select id="filtroStatus">
+
+            <option value="all">Todos</option>
+            <option value="Alive">Vivos</option>
+            <option value="Dead">Mortos</option>
+            <option value="unknown">Desconhecido</option>
+
+        </select>
+
+        <button id="carregar">
+            Carregar Personagens
+        </button>
+
+    </div>
+
+    <!-- LOADING -->
+    <div id="loading" class="loading hidden">
+
+        Carregando personagens...
+
+    </div>
+
+    <!-- CONTAINER DOS CARDS -->
+    <div id="container"></div>
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
