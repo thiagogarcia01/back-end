@@ -1,97 +1,197 @@
-// Seleciona o botão da página pelo ID "buscar"
-// Esse botão será usado para iniciar a busca na API
-const botao = document.getElementById("buscar")
+/*
+=========================================
+PROJETO: API Rick and Morty
+=========================================
 
-// Seleciona a div onde os personagens serão exibidos
-// Essa área funciona como um "container" para os cards
+API utilizada:
+https://rickandmortyapi.com/api/character
+
+=========================================
+*/
+
+
+// ELEMENTOS DA INTERFACE
+
+const botaoCarregar = document.getElementById("carregar")
 const container = document.getElementById("container")
-
-// Adiciona um evento de clique ao botão
-// Quando o usuário clicar, a função buscarPersonagens será executada
-botao.addEventListener("click", buscarPersonagens)
-
-
-// Função responsável por buscar os dados da API
-function buscarPersonagens(){
-
-// EXERCÍCIO DA AULA:
-// Inicialmente a variável da API está comentada como abaixo.
-// Isso fará o código gerar erro ao executar o fetch().
-//
-// O objetivo é que:
-// 1 - Testem o comportamento do erro
-// 2 - Observem o console do navegador
-// 3 - Depois removam o comentário da linha abaixo
-// 4 - Assim a API passará a funcionar corretamente
-
-//TIRAR COMENTÁRIO DA LINHA ABAIXO
-//const url = "https://rickandmortyapi.com/api/character"
+const buscaInput = document.getElementById("busca")
+const filtroStatus = document.getElementById("filtroStatus")
+const loading = document.getElementById("loading")
 
 
-// fetch() é usado para fazer uma requisição para uma API
-// Nesse caso estamos tentando acessar a URL da API
-fetch(url)
 
-.then(res => {
+// ARRAY GLOBAL COM PERSONAGENS
 
-    // Verifica se a resposta da API foi bem sucedida
-    // Se não for (por exemplo erro 404 ou problema de conexão),
-    // lançamos um erro manual
-    if(!res.ok){
+let todosPersonagens = []
 
-        throw new Error("Erro ao acessar API")
 
-    }
 
-    // Converte a resposta da API para formato JSON
-    // JSON é o formato padrão de dados usado por APIs
-    return res.json()
+// EVENTOS
+
+botaoCarregar.addEventListener("click", carregarPersonagens)
+
+buscaInput.addEventListener("input", filtrarPersonagens)
+
+filtroStatus.addEventListener("change", filtrarPersonagens)
+
+
+
+
+
+// =================================
+// FUNÇÃO QUE BUSCA PERSONAGENS
+// =================================
+
+async function carregarPersonagens(){
+
+mostrarLoading()
+
+let pagina = 1
+let continuar = true
+
+todosPersonagens = []
+
+
+while(continuar){
+
+const url = `https://rickandmortyapi.com/api/character?page=${pagina}`
+
+try{
+
+const resposta = await fetch(url)
+
+const dados = await resposta.json()
+
+// adiciona personagens no array
+todosPersonagens = todosPersonagens.concat(dados.results)
+
+// verifica se existe próxima página
+
+if(dados.info.next){
+
+pagina++
+
+}else{
+
+continuar = false
+
+}
+
+}catch(erro){
+
+console.error("Erro na API", erro)
+
+continuar = false
+
+}
+
+}
+
+esconderLoading()
+
+mostrarPersonagens(todosPersonagens)
+
+}
+
+
+
+
+
+// =================================
+// MOSTRAR PERSONAGENS NA TELA
+// =================================
+
+function mostrarPersonagens(lista){
+
+container.innerHTML = ""
+
+lista.forEach(personagem => {
+
+const card = document.createElement("div")
+
+card.classList.add("card")
+
+// define cor da borda pelo status
+
+if(personagem.status === "Alive"){
+
+card.classList.add("status-alive")
+
+}else if(personagem.status === "Dead"){
+
+card.classList.add("status-dead")
+
+}else{
+
+card.classList.add("status-unknown")
+
+}
+
+
+card.innerHTML = `
+
+<img src="${personagem.image}">
+
+<h3>${personagem.name}</h3>
+
+<p>Status: ${personagem.status}</p>
+
+<p>Espécie: ${personagem.species}</p>
+
+<p>Origem: ${personagem.origin.name}</p>
+
+`
+
+container.appendChild(card)
 
 })
 
-.then(data => {
+}
 
-    // Mostra no console todos os dados recebidos da API
-    // Útil para os alunos visualizarem a estrutura da resposta
-    console.log(data)
 
-    // A API retorna vários personagens dentro de "results"
-    // Vamos percorrer cada personagem usando forEach
-    data.results.forEach(personagem => {
 
-        // Para cada personagem criamos um "card" na página
-        // innerHTML += adiciona conteúdo dentro da div container
-        container.innerHTML += `
 
-        <div class="card">
 
-        <img src="${personagem.image}">
+// =================================
+// FILTRO E BUSCA
+// =================================
 
-        <h3>${personagem.name}</h3>
+function filtrarPersonagens(){
 
-        <p>Status: ${personagem.status}</p>
+const textoBusca = buscaInput.value.toLowerCase()
 
-        </div>
+const statusSelecionado = filtroStatus.value
 
-        `
+let filtrados = todosPersonagens.filter(personagem => {
 
-    })
+const nomeMatch = personagem.name.toLowerCase().includes(textoBusca)
+
+const statusMatch = statusSelecionado === "all" || personagem.status === statusSelecionado
+
+return nomeMatch && statusMatch
 
 })
 
-.catch(erro => {
+mostrarPersonagens(filtrados)
 
-    // Se qualquer erro acontecer (API fora do ar, URL incorreta, etc)
-    // ele será capturado aqui
-    console.log("Erro detectado:", erro)
+}
 
-    // Mostra uma mensagem de erro na página para o usuário
-    container.innerHTML = `
-    <p style="color:red; font-size:20px;">
-    Erro ao carregar personagens. Verifique o link da API.
-    </p>
-    `
 
-})
+
+
+
+// =================================
+// CONTROLE DO LOADING
+// =================================
+
+function mostrarLoading(){
+
+loading.classList.remove("hidden")
+
+}
+
+function esconderLoading(){
+
+loading.classList.add("hidden")
 
 }
